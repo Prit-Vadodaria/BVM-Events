@@ -4,6 +4,7 @@ import com.bvm.events.model.ApiResponse;
 import com.bvm.events.model.AttendanceRecord;
 import com.bvm.events.model.Attendee;
 import com.bvm.events.model.AuthResponse;
+import com.bvm.events.model.BookmarkToggleResponse;
 import com.bvm.events.model.CheckInRequest;
 import com.bvm.events.model.CheckInResponse;
 import com.bvm.events.model.Event;
@@ -14,6 +15,7 @@ import com.bvm.events.model.IdRequest;
 import com.bvm.events.model.LoginRequest;
 import com.bvm.events.model.RegisterRequest;
 import com.bvm.events.model.RegisterResponse;
+import com.bvm.events.model.UpdateEventsResponse;
 import com.bvm.events.model.Venue;
 
 import java.util.List;
@@ -67,6 +69,9 @@ public interface ApiService {
     @POST("events/delete.php")
     Call<ApiResponse<Object>> deleteEvent(@Body IdRequest request);
 
+    @GET("events/updates.php")
+    Call<ApiResponse<UpdateEventsResponse>> getEventUpdates(@Query("since") String since);
+
     // Image Upload
     @Multipart
     @POST("events/upload_image.php")
@@ -89,4 +94,11 @@ public interface ApiService {
     @Streaming
     @GET("attendance/export.php")
     Call<ResponseBody> exportAttendanceCsv(@Query("id") int eventId);
+
+    // Bookmarks
+    @POST("bookmarks/toggle.php")
+    Call<ApiResponse<BookmarkToggleResponse>> toggleBookmark(@Body IdRequest request);
+
+    @GET("bookmarks/mine.php")
+    Call<ApiResponse<List<Event>>> getMyBookmarks();
 }

@@ -1,9 +1,14 @@
 package com.bvm.events;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bvm.events.databinding.ActivityMainBinding;
@@ -37,7 +42,21 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Schedule periodic background check worker
+        BvmApp.scheduleUpdateCheck(this);
+
+        // Request POST_NOTIFICATIONS runtime permission on Android 13+
+        requestNotificationPermission();
+
         setupRoleBasedNavigation();
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
     }
 
     private void setupRoleBasedNavigation() {
@@ -95,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
             loadFragment(new PendingOrganizersFragment());
 
         } else {
-            // Default fallback
             loadFragment(new ProfileFragment());
         }
     }

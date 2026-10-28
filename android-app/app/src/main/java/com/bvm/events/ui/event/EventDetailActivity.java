@@ -19,11 +19,14 @@ import com.bvm.events.R;
 import com.bvm.events.adapter.ImageGalleryAdapter;
 import com.bvm.events.databinding.ActivityEventDetailBinding;
 import com.bvm.events.model.ApiResponse;
+import com.bvm.events.model.BookmarkToggleResponse;
 import com.bvm.events.model.CheckInRequest;
 import com.bvm.events.model.CheckInResponse;
 import com.bvm.events.model.EventDetail;
+import com.bvm.events.model.IdRequest;
 import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
+import com.bvm.events.notify.ReminderScheduler;
 import com.bvm.events.ui.organizer.AttendeeListActivity;
 import com.bvm.events.ui.organizer.ImageUploadActivity;
 import com.bvm.events.util.Constants;
@@ -70,6 +73,8 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         setupGalleryRecyclerView();
+
+        binding.btnBookmark.setOnClickListener(v -> toggleBookmark());
 
         binding.btnCheckin.setOnClickListener(v -> initiateCheckIn());
 
@@ -230,6 +235,49 @@ public class EventDetailActivity extends AppCompatActivity {
         // Organizer controls
         boolean isOwner = ((sessionManager.isOrganizer() || sessionManager.isAdmin()) && event.getOrganizer() != null && (event.getOrganizer().getId() == sessionManager.getUserId() || sessionManager.isAdmin()));
         binding.layoutOrganizerControls.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+    }
+
+    private void toggleBookmark() {
+        if (!sessionManager.isStudent()) {
+            Toast.makeText(this, "Only students can bookmark events.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        binding.btnBookmark.setEnabled(false);
+
+        ApiClient.getInstance()
+                .getService()
+                .toggleBookmark(new IdRequest(eventId))
+                .enqueue(new ApiCallback<BookmarkToggleResponse>() {
+                    @Override
+                    public void onSuccess(BookmarkToggleResponse data) {
+                        if (isFinishing() || isDestroyed()) return;
+                        binding.btnBookmark.setEnabled(true);
+
+                        boolean isBookmarked = data.isBookmarked();
+                        updateBookmarkIcon(isBookmarked);
+                        if (currentEvent != null) {
+                            currentEvent.setBookmarked(isBookmarked);
+                        }
+
+                        if (isBookmarked) {
+                            String title = data.getTitle().isEmpty() && currentEvent != null ? currentEvent.getTitle() : data.getTitle();
+                            String start = data.getStartTime().isEmpty() && currentEvent != null ? currentEvent.getStartTime() : data.getStartTime();
+                            ReminderScheduler.scheduleReminder(EventDetailActivity.this, eventId, title, start);
+                            Toast.makeText(EventDetailActivity.this, "Bookmarked! Reminder set 15 min before start.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            ReminderScheduler.cancelReminder(EventDetailActivity.this, eventId);
+                            Toast.makeText(EventDetailActivity.this, "Bookmark removed.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message, String errorCode) {
+                        if (isFinishing() || isDestroyed()) return;
+                        binding.btnBookmark.setEnabled(true);
+                        Toast.makeText(EventDetailActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void updateBookmarkIcon(boolean isBookmarked) {
