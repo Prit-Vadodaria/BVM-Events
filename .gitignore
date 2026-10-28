@@ -13,3 +13,7 @@ captures/
 php-api/config.php
 php-api/uploads/*
 !php-api/uploads/.gitkeep
+!php-api/uploads/.htaccess
+
+# Documentations
+Documentations/

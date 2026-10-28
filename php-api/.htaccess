@@ -1,0 +1,15 @@
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e:HTTP_AUTHORIZATION:%1]
+</IfModule>
+
+# Ensure Authorization header is passed to PHP scripts
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+# Options
+Options -Indexes
+
