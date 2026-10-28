@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/nav_events"
+        android:icon="@drawable/ic_event"
+        android:title="Events" />
+    <item
         android:id="@+id/nav_pending_organizers"
         android:icon="@drawable/ic_admin"
         android:title="Approvals" />

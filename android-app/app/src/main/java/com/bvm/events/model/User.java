@@ -22,6 +22,9 @@ public class User implements Serializable {
     @SerializedName("is_approved")
     private int isApproved;
 
+    @SerializedName("created_at")
+    private String createdAt;
+
     public int getId() {
         return id;
     }
@@ -68,6 +71,14 @@ public class User implements Serializable {
 
     public void setIsApproved(int isApproved) {
         this.isApproved = isApproved;
+    }
+
+    public String getCreatedAt() {
+        return createdAt != null ? createdAt : "";
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }
 

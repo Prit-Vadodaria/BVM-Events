@@ -1,6 +1,7 @@
 package com.bvm.events.network;
 
 import com.bvm.events.model.ApiResponse;
+import com.bvm.events.model.ApproveOrganizerRequest;
 import com.bvm.events.model.AttendanceRecord;
 import com.bvm.events.model.Attendee;
 import com.bvm.events.model.AuthResponse;
@@ -16,6 +17,7 @@ import com.bvm.events.model.LoginRequest;
 import com.bvm.events.model.RegisterRequest;
 import com.bvm.events.model.RegisterResponse;
 import com.bvm.events.model.UpdateEventsResponse;
+import com.bvm.events.model.User;
 import com.bvm.events.model.Venue;
 
 import java.util.List;
@@ -101,4 +103,11 @@ public interface ApiService {
 
     @GET("bookmarks/mine.php")
     Call<ApiResponse<List<Event>>> getMyBookmarks();
+
+    // Admin
+    @GET("admin/pending_organizers.php")
+    Call<ApiResponse<List<User>>> getPendingOrganizers();
+
+    @POST("admin/approve_organizer.php")
+    Call<ApiResponse<Object>> approveOrganizer(@Body ApproveOrganizerRequest request);
 }

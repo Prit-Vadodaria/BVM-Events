@@ -102,7 +102,10 @@ public class MainActivity extends AppCompatActivity {
             binding.bottomNavigation.inflateMenu(R.menu.menu_admin);
             binding.bottomNavigation.setOnItemSelectedListener(item -> {
                 int id = item.getItemId();
-                if (id == R.id.nav_pending_organizers) {
+                if (id == R.id.nav_events) {
+                    loadFragment(new EventListFragment());
+                    return true;
+                } else if (id == R.id.nav_pending_organizers) {
                     loadFragment(new PendingOrganizersFragment());
                     return true;
                 } else if (id == R.id.nav_profile) {
