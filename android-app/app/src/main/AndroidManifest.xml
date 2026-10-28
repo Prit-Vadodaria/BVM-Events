@@ -53,6 +53,15 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".ui.event.EventDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.organizer.EventFormActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- FileProvider for CSV and image capture sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"
