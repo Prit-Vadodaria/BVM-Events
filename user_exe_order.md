@@ -202,3 +202,4 @@ Once the app launches on the phone, log in with any of the seeded roles:
 | **"Unable to connect to MySQL"** | MySQL service stopped | Open XAMPP Control Panel and ensure the **MySQL** module is running (green). |
 | **"Organizer account pending approval"** | New organizers default to unapproved | Log in as Admin (`admin@bvm.local` / `admin123`) and approve the organizer from the Approvals tab. |
 | **"Out of range" during check-in** | Student is physically outside venue radius | GPS check-in uses geofencing based on BVM campus venue coordinates. To test check-in, set the event venue to your current location or test near the venue coordinates. |
+
