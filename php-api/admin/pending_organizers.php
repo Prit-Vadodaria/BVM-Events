@@ -25,3 +25,4 @@ foreach ($pending as &$row) {
 unset($row);
 
 json_ok($pending, 'Pending organizers retrieved successfully.');
+

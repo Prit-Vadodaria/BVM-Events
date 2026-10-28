@@ -47,3 +47,4 @@ public class EventUpdateItem {
         this.updatedAt = updatedAt;
     }
 }
+

@@ -83,3 +83,4 @@ public class UpdateCheckWorker extends Worker {
         }
     }
 }
+

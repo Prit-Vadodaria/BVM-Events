@@ -60,3 +60,4 @@ public class AttendeeAdapter extends RecyclerView.Adapter<AttendeeAdapter.Attend
         }
     }
 }
+

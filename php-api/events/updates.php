@@ -54,3 +54,4 @@ json_ok([
     'events' => $updates,
     'count' => count($updates)
 ], 'Event updates retrieved successfully.');
+

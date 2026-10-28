@@ -57,3 +57,4 @@ if ($existing) {
         'title' => $event['title']
     ], 'Event added to bookmarks.');
 }
+

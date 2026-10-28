@@ -57,3 +57,4 @@ json_ok($attendees, 'Attendee list retrieved successfully.', [
     'event_title' => $event['title'],
     'total_count' => count($attendees)
 ]);
+

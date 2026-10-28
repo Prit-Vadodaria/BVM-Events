@@ -55,3 +55,4 @@ if ($approve) {
         'approved' => false
     ], "Organizer registration for {$targetUser['name']} has been rejected and removed.");
 }
+

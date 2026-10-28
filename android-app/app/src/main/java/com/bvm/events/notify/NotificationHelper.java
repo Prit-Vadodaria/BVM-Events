@@ -44,3 +44,4 @@ public final class NotificationHelper {
         manager.notify(notificationId, builder.build());
     }
 }
+

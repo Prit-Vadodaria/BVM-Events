@@ -48,3 +48,4 @@ public class Attendee implements Serializable {
         this.checkInTime = checkInTime;
     }
 }
+

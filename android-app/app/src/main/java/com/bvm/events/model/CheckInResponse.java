@@ -25,3 +25,4 @@ public class CheckInResponse {
         this.distanceMeters = distanceMeters;
     }
 }
+

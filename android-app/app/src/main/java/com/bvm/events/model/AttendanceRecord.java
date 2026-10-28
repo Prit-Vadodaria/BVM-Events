@@ -59,3 +59,4 @@ public class AttendanceRecord implements Serializable {
         this.checkInTime = checkInTime;
     }
 }
+

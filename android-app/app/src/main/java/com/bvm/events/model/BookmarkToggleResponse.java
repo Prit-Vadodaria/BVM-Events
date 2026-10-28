@@ -47,3 +47,4 @@ public class BookmarkToggleResponse {
         this.title = title;
     }
 }
+

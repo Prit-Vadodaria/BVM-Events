@@ -35,3 +35,4 @@ foreach ($history as &$row) {
 unset($row);
 
 json_ok($history, 'Attendance history retrieved successfully.');
+
