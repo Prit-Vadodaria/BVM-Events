@@ -37,3 +37,4 @@ public class EventImage implements Serializable {
         isPoster = poster;
     }
 }
+

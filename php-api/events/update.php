@@ -66,3 +66,4 @@ $updateStmt = $pdo->prepare("
 $updateStmt->execute([$title, $description, $category, $venueId, $startTime, $endTime, $eventId]);
 
 json_ok(['id' => $eventId], 'Event updated successfully.');
+

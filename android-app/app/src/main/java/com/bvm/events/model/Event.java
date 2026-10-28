@@ -170,3 +170,4 @@ public class Event implements Serializable {
         this.attendeeCount = attendeeCount;
     }
 }
+

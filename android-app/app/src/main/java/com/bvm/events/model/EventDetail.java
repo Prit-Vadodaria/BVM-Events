@@ -161,3 +161,4 @@ public class EventDetail implements Serializable {
         this.attendeeCount = attendeeCount;
     }
 }
+

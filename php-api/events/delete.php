@@ -54,3 +54,4 @@ $delStmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
 $delStmt->execute([$eventId]);
 
 json_ok(null, 'Event deleted successfully.');
+

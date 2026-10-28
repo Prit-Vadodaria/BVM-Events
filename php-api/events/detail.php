@@ -112,3 +112,4 @@ $eventDetail = [
 ];
 
 json_ok($eventDetail, 'Event details retrieved successfully.');
+

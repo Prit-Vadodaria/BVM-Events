@@ -62,6 +62,10 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".ui.organizer.ImageUploadActivity"
+            android:exported="false" />
+
         <!-- FileProvider for CSV and image capture sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"

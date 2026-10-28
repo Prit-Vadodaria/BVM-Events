@@ -7,15 +7,18 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.bvm.events.BuildConfig;
 import com.bvm.events.R;
+import com.bvm.events.adapter.ImageGalleryAdapter;
 import com.bvm.events.databinding.ActivityEventDetailBinding;
 import com.bvm.events.model.ApiResponse;
 import com.bvm.events.model.EventDetail;
 import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
+import com.bvm.events.ui.organizer.ImageUploadActivity;
 import com.bvm.events.util.Constants;
 import com.bvm.events.util.DateUtils;
 import com.bvm.events.util.SessionManager;
@@ -28,6 +31,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private SessionManager sessionManager;
     private int eventId;
     private EventDetail currentEvent;
+    private ImageGalleryAdapter galleryAdapter;
     private Call<?> activeCall;
 
     @Override
@@ -45,9 +49,22 @@ public class EventDetailActivity extends AppCompatActivity {
             return;
         }
 
+        setupGalleryRecyclerView();
+
         binding.btnCheckin.setOnClickListener(v -> handleCheckInClick());
+        binding.btnManagePhotos.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ImageUploadActivity.class);
+            intent.putExtra(Constants.EXTRA_EVENT_ID, eventId);
+            startActivity(intent);
+        });
 
         loadEventDetail();
+    }
+
+    private void setupGalleryRecyclerView() {
+        galleryAdapter = new ImageGalleryAdapter();
+        binding.rvGallery.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.rvGallery.setAdapter(galleryAdapter);
     }
 
     @Override
@@ -120,7 +137,7 @@ public class EventDetailActivity extends AppCompatActivity {
             binding.tvDetailStatus.setTextColor(Color.parseColor("#616161"));
         }
 
-        // Poster image
+        // Poster image & Gallery
         String posterUrl = null;
         if (!event.getImages().isEmpty()) {
             for (int i = 0; i < event.getImages().size(); i++) {
@@ -132,6 +149,12 @@ public class EventDetailActivity extends AppCompatActivity {
             if (posterUrl == null) {
                 posterUrl = event.getImages().get(0).getImageUrl();
             }
+
+            // Gallery section
+            binding.layoutGallery.setVisibility(View.VISIBLE);
+            galleryAdapter.setImages(event.getImages());
+        } else {
+            binding.layoutGallery.setVisibility(View.GONE);
         }
 
         if (posterUrl != null && !posterUrl.trim().isEmpty()) {

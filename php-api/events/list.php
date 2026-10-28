@@ -116,3 +116,4 @@ foreach ($events as &$ev) {
 unset($ev);
 
 json_ok($events, 'Events retrieved successfully.');
+

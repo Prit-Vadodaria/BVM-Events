@@ -5,6 +5,7 @@ import com.bvm.events.model.AuthResponse;
 import com.bvm.events.model.Event;
 import com.bvm.events.model.EventCreateUpdateRequest;
 import com.bvm.events.model.EventDetail;
+import com.bvm.events.model.EventImage;
 import com.bvm.events.model.IdRequest;
 import com.bvm.events.model.LoginRequest;
 import com.bvm.events.model.RegisterRequest;
@@ -13,10 +14,14 @@ import com.bvm.events.model.Venue;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 public interface ApiService {
@@ -55,4 +60,13 @@ public interface ApiService {
 
     @POST("events/delete.php")
     Call<ApiResponse<Object>> deleteEvent(@Body IdRequest request);
+
+    // Image Upload
+    @Multipart
+    @POST("events/upload_image.php")
+    Call<ApiResponse<EventImage>> uploadImage(
+            @Part("event_id") RequestBody eventId,
+            @Part("is_poster") RequestBody isPoster,
+            @Part MultipartBody.Part image
+    );
 }

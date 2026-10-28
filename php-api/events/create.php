@@ -54,3 +54,4 @@ $insertStmt->execute([$title, $description, $category, $venueId, $startTime, $en
 $eventId = (int)$pdo->lastInsertId();
 
 json_ok(['id' => $eventId], 'Event created successfully.');
+
