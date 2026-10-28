@@ -1,0 +1,15 @@
+# Android
+*.iml
+.gradle/
+local.properties
+.idea/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+
+# PHP / server
+php-api/config.php
+php-api/uploads/*
+!php-api/uploads/.gitkeep
