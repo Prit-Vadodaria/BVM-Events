@@ -1,7 +1,11 @@
 package com.bvm.events.network;
 
 import com.bvm.events.model.ApiResponse;
+import com.bvm.events.model.AttendanceRecord;
+import com.bvm.events.model.Attendee;
 import com.bvm.events.model.AuthResponse;
+import com.bvm.events.model.CheckInRequest;
+import com.bvm.events.model.CheckInResponse;
 import com.bvm.events.model.Event;
 import com.bvm.events.model.EventCreateUpdateRequest;
 import com.bvm.events.model.EventDetail;
@@ -16,6 +20,7 @@ import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -23,6 +28,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
 
 public interface ApiService {
 
@@ -69,4 +75,18 @@ public interface ApiService {
             @Part("is_poster") RequestBody isPoster,
             @Part MultipartBody.Part image
     );
+
+    // Attendance
+    @POST("attendance/checkin.php")
+    Call<ApiResponse<CheckInResponse>> checkIn(@Body CheckInRequest request);
+
+    @GET("attendance/mine.php")
+    Call<ApiResponse<List<AttendanceRecord>>> getMyAttendance();
+
+    @GET("attendance/event.php")
+    Call<ApiResponse<List<Attendee>>> getEventAttendees(@Query("id") int eventId);
+
+    @Streaming
+    @GET("attendance/export.php")
+    Call<ResponseBody> exportAttendanceCsv(@Query("id") int eventId);
 }

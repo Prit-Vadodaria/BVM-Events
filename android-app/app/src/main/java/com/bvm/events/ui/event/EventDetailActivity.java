@@ -1,11 +1,15 @@
 package com.bvm.events.ui.event;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -15,12 +19,16 @@ import com.bvm.events.R;
 import com.bvm.events.adapter.ImageGalleryAdapter;
 import com.bvm.events.databinding.ActivityEventDetailBinding;
 import com.bvm.events.model.ApiResponse;
+import com.bvm.events.model.CheckInRequest;
+import com.bvm.events.model.CheckInResponse;
 import com.bvm.events.model.EventDetail;
 import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
+import com.bvm.events.ui.organizer.AttendeeListActivity;
 import com.bvm.events.ui.organizer.ImageUploadActivity;
 import com.bvm.events.util.Constants;
 import com.bvm.events.util.DateUtils;
+import com.bvm.events.util.LocationHelper;
 import com.bvm.events.util.SessionManager;
 
 import retrofit2.Call;
@@ -29,10 +37,21 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private ActivityEventDetailBinding binding;
     private SessionManager sessionManager;
+    private LocationHelper locationHelper;
     private int eventId;
     private EventDetail currentEvent;
     private ImageGalleryAdapter galleryAdapter;
     private Call<?> activeCall;
+
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                Boolean fineGranted = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+                if (fineGranted != null && fineGranted) {
+                    performGpsCheckIn();
+                } else {
+                    Toast.makeText(this, "Fine location permission is required for campus check-in.", Toast.LENGTH_LONG).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +60,7 @@ public class EventDetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         sessionManager = new SessionManager(this);
+        locationHelper = new LocationHelper(this);
         eventId = getIntent().getIntExtra(Constants.EXTRA_EVENT_ID, -1);
 
         if (eventId <= 0) {
@@ -51,10 +71,18 @@ public class EventDetailActivity extends AppCompatActivity {
 
         setupGalleryRecyclerView();
 
-        binding.btnCheckin.setOnClickListener(v -> handleCheckInClick());
+        binding.btnCheckin.setOnClickListener(v -> initiateCheckIn());
+
         binding.btnManagePhotos.setOnClickListener(v -> {
             Intent intent = new Intent(this, ImageUploadActivity.class);
             intent.putExtra(Constants.EXTRA_EVENT_ID, eventId);
+            startActivity(intent);
+        });
+
+        binding.btnViewAttendees.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AttendeeListActivity.class);
+            intent.putExtra(Constants.EXTRA_EVENT_ID, eventId);
+            intent.putExtra(Constants.EXTRA_EVENT, currentEvent != null ? currentEvent.getTitle() : "Event Attendees");
             startActivity(intent);
         });
 
@@ -137,7 +165,7 @@ public class EventDetailActivity extends AppCompatActivity {
             binding.tvDetailStatus.setTextColor(Color.parseColor("#616161"));
         }
 
-        // Poster image & Gallery
+        // Poster & Gallery
         String posterUrl = null;
         if (!event.getImages().isEmpty()) {
             for (int i = 0; i < event.getImages().size(); i++) {
@@ -150,7 +178,6 @@ public class EventDetailActivity extends AppCompatActivity {
                 posterUrl = event.getImages().get(0).getImageUrl();
             }
 
-            // Gallery section
             binding.layoutGallery.setVisibility(View.VISIBLE);
             galleryAdapter.setImages(event.getImages());
         } else {
@@ -166,34 +193,42 @@ public class EventDetailActivity extends AppCompatActivity {
                     .into(binding.imgDetailPoster);
         }
 
-        // Bookmark button appearance
+        // Bookmark appearance
         updateBookmarkIcon(event.isBookmarked());
 
         // Check-In Button State
-        if (event.isHasCheckedIn()) {
-            binding.btnCheckin.setEnabled(false);
-            binding.btnCheckin.setText("Checked In ✓");
-            binding.tvCheckinStatus.setText("You have already checked in for this event.");
-            binding.tvCheckinStatus.setTextColor(Color.parseColor("#2E7D32"));
-        } else if (event.isOngoing()) {
-            binding.btnCheckin.setEnabled(true);
-            binding.btnCheckin.setText("Check In via GPS");
-            binding.tvCheckinStatus.setText("Event is ongoing! Mark your attendance.");
-            binding.tvCheckinStatus.setTextColor(Color.parseColor("#1565C0"));
-        } else if (event.isUpcoming()) {
-            binding.btnCheckin.setEnabled(false);
-            binding.btnCheckin.setText("Check In (Not Available Yet)");
-            binding.tvCheckinStatus.setText("Attendance opens when the event starts.");
-            binding.tvCheckinStatus.setTextColor(Color.parseColor("#757575"));
+        if (sessionManager.isOrganizer() || sessionManager.isAdmin()) {
+            binding.btnCheckin.setVisibility(View.GONE);
+            binding.tvCheckinStatus.setVisibility(View.GONE);
         } else {
-            binding.btnCheckin.setEnabled(false);
-            binding.btnCheckin.setText("Event Ended");
-            binding.tvCheckinStatus.setText("This event has ended.");
-            binding.tvCheckinStatus.setTextColor(Color.parseColor("#757575"));
+            binding.btnCheckin.setVisibility(View.VISIBLE);
+            binding.tvCheckinStatus.setVisibility(View.VISIBLE);
+
+            if (event.isHasCheckedIn()) {
+                binding.btnCheckin.setEnabled(false);
+                binding.btnCheckin.setText("Checked In ✓");
+                binding.tvCheckinStatus.setText("You have already checked in for this event.");
+                binding.tvCheckinStatus.setTextColor(Color.parseColor("#2E7D32"));
+            } else if (event.isOngoing()) {
+                binding.btnCheckin.setEnabled(true);
+                binding.btnCheckin.setText("Check In via GPS");
+                binding.tvCheckinStatus.setText("Event is ongoing! Tap to mark attendance.");
+                binding.tvCheckinStatus.setTextColor(Color.parseColor("#1565C0"));
+            } else if (event.isUpcoming()) {
+                binding.btnCheckin.setEnabled(false);
+                binding.btnCheckin.setText("Check In (Not Available Yet)");
+                binding.tvCheckinStatus.setText("Attendance opens when the event starts.");
+                binding.tvCheckinStatus.setTextColor(Color.parseColor("#757575"));
+            } else {
+                binding.btnCheckin.setEnabled(false);
+                binding.btnCheckin.setText("Event Ended");
+                binding.tvCheckinStatus.setText("This event has ended.");
+                binding.tvCheckinStatus.setTextColor(Color.parseColor("#757575"));
+            }
         }
 
-        // Organizer controls visibility
-        boolean isOwner = (sessionManager.isOrganizer() && event.getOrganizer() != null && event.getOrganizer().getId() == sessionManager.getUserId());
+        // Organizer controls
+        boolean isOwner = ((sessionManager.isOrganizer() || sessionManager.isAdmin()) && event.getOrganizer() != null && (event.getOrganizer().getId() == sessionManager.getUserId() || sessionManager.isAdmin()));
         binding.layoutOrganizerControls.setVisibility(isOwner ? View.VISIBLE : View.GONE);
     }
 
@@ -205,9 +240,87 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void handleCheckInClick() {
-        if (currentEvent == null) return;
-        Toast.makeText(this, "GPS Attendance check initiated...", Toast.LENGTH_SHORT).show();
+    private void initiateCheckIn() {
+        if (!locationHelper.hasLocationPermission()) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+            return;
+        }
+
+        performGpsCheckIn();
+    }
+
+    private void performGpsCheckIn() {
+        binding.btnCheckin.setEnabled(false);
+        binding.tvCheckinStatus.setText("Acquiring high-accuracy GPS fix...");
+        binding.tvCheckinStatus.setTextColor(Color.parseColor("#1565C0"));
+
+        locationHelper.fetchCurrentLocation(new LocationHelper.OnLocationResultListener() {
+            @Override
+            public void onLocationSuccess(double latitude, double longitude, boolean isMock) {
+                if (isFinishing() || isDestroyed()) return;
+
+                if (isMock) {
+                    binding.btnCheckin.setEnabled(true);
+                    new AlertDialog.Builder(EventDetailActivity.this)
+                            .setTitle("Mock Location Detected")
+                            .setMessage("GPS spoofing / mock location is not allowed for attendance verification.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                    return;
+                }
+
+                submitCheckIn(latitude, longitude, isMock);
+            }
+
+            @Override
+            public void onLocationError(String errorMessage) {
+                if (isFinishing() || isDestroyed()) return;
+                binding.btnCheckin.setEnabled(true);
+                binding.tvCheckinStatus.setText(errorMessage);
+                binding.tvCheckinStatus.setTextColor(Color.parseColor("#C62828"));
+                Toast.makeText(EventDetailActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void submitCheckIn(double lat, double lng, boolean isMock) {
+        binding.tvCheckinStatus.setText("Verifying attendance with campus server...");
+
+        CheckInRequest request = new CheckInRequest(eventId, lat, lng, isMock);
+        ApiClient.getInstance()
+                .getService()
+                .checkIn(request)
+                .enqueue(new ApiCallback<CheckInResponse>() {
+                    @Override
+                    public void onSuccess(CheckInResponse data) {
+                        if (isFinishing() || isDestroyed()) return;
+                        binding.btnCheckin.setEnabled(false);
+                        binding.btnCheckin.setText("Checked In ✓");
+                        binding.tvCheckinStatus.setText("Attendance verified! Checked in at " + DateUtils.formatTimeOnly(data.getCheckInTime()));
+                        binding.tvCheckinStatus.setTextColor(Color.parseColor("#2E7D32"));
+                        Toast.makeText(EventDetailActivity.this, "Check-in successful!", Toast.LENGTH_SHORT).show();
+
+                        // Refresh event details
+                        loadEventDetail();
+                    }
+
+                    @Override
+                    public void onError(String message, String errorCode) {
+                        if (isFinishing() || isDestroyed()) return;
+                        binding.btnCheckin.setEnabled(true);
+                        binding.tvCheckinStatus.setText(message);
+                        binding.tvCheckinStatus.setTextColor(Color.parseColor("#C62828"));
+
+                        new AlertDialog.Builder(EventDetailActivity.this)
+                                .setTitle("Check-In Failed")
+                                .setMessage(message)
+                                .setPositiveButton("OK", null)
+                                .show();
+                    }
+                });
     }
 
     @Override

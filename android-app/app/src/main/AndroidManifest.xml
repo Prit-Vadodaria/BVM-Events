@@ -66,6 +66,10 @@
             android:name=".ui.organizer.ImageUploadActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.organizer.AttendeeListActivity"
+            android:exported="false" />
+
         <!-- FileProvider for CSV and image capture sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"
