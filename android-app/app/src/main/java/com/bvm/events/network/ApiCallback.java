@@ -1,5 +1,8 @@
 package com.bvm.events.network;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.bvm.events.model.ApiResponse;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -13,7 +16,12 @@ import retrofit2.Response;
 
 public abstract class ApiCallback<T> implements Callback<ApiResponse<T>> {
 
+    private static final int MAX_NETWORK_RETRIES = 3;
+    private static final long INITIAL_RETRY_DELAY_MS = 1_000L;
     private static final Gson GSON = new Gson();
+    private final Handler retryHandler = new Handler(Looper.getMainLooper());
+    private Call<ApiResponse<T>> originalCall;
+    private int networkRetryCount;
 
     public abstract void onSuccess(T data);
 
@@ -21,6 +29,8 @@ public abstract class ApiCallback<T> implements Callback<ApiResponse<T>> {
 
     @Override
     public void onResponse(Call<ApiResponse<T>> call, Response<ApiResponse<T>> response) {
+        if (isOriginalCallCanceled(call)) return;
+
         if (response.isSuccessful()) {
             ApiResponse<T> body = response.body();
             if (body != null && body.isSuccess()) {
@@ -61,11 +71,33 @@ public abstract class ApiCallback<T> implements Callback<ApiResponse<T>> {
 
     @Override
     public void onFailure(Call<ApiResponse<T>> call, Throwable t) {
+        if (originalCall == null) {
+            originalCall = call;
+        }
+        if (originalCall.isCanceled() || call.isCanceled()) return;
+
         if (t instanceof IOException) {
+            if ("GET".equalsIgnoreCase(call.request().method())
+                    && networkRetryCount < MAX_NETWORK_RETRIES) {
+                long delay = INITIAL_RETRY_DELAY_MS << networkRetryCount;
+                networkRetryCount++;
+                retryHandler.postDelayed(() -> {
+                    if (!originalCall.isCanceled()) {
+                        originalCall.clone().enqueue(this);
+                    }
+                }, delay);
+                return;
+            }
             onError("No internet or server unreachable", "NETWORK_ERROR");
         } else {
             onError(t.getMessage() != null ? t.getMessage() : "Unknown request failure", "CLIENT_ERROR");
         }
     }
-}
 
+    private boolean isOriginalCallCanceled(Call<ApiResponse<T>> call) {
+        if (originalCall == null) {
+            originalCall = call;
+        }
+        return originalCall.isCanceled() || call.isCanceled();
+    }
+}
