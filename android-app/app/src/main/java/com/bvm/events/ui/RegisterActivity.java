@@ -6,6 +6,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,6 +16,7 @@ import com.bvm.events.model.RegisterResponse;
 import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
 import com.bvm.events.util.Constants;
+import com.bvm.events.util.InsetsUtil;
 
 import retrofit2.Call;
 
@@ -26,8 +28,10 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        InsetsUtil.applyPadding(binding.getRoot(), true, true);
 
         // Role radio group listener
         binding.rgRole.setOnCheckedChangeListener((group, checkedId) -> {

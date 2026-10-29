@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -31,6 +32,7 @@ import com.bvm.events.ui.organizer.AttendeeListActivity;
 import com.bvm.events.ui.organizer.ImageUploadActivity;
 import com.bvm.events.util.Constants;
 import com.bvm.events.util.DateUtils;
+import com.bvm.events.util.InsetsUtil;
 import com.bvm.events.util.LocationHelper;
 import com.bvm.events.util.SessionManager;
 
@@ -59,8 +61,10 @@ public class EventDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityEventDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        InsetsUtil.applyPadding(binding.getRoot(), true, true);
 
         sessionManager = new SessionManager(this);
         locationHelper = new LocationHelper(this);

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import com.bvm.events.model.EventImage;
 import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
 import com.bvm.events.util.Constants;
+import com.bvm.events.util.InsetsUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -57,8 +59,10 @@ public class ImageUploadActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityImageUploadBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        InsetsUtil.applyPadding(binding.getRoot(), true, true);
 
         eventId = getIntent().getIntExtra(Constants.EXTRA_EVENT_ID, -1);
         if (eventId <= 0) {

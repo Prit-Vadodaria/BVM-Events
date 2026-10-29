@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,6 +20,7 @@ import com.bvm.events.ui.student.BookmarksFragment;
 import com.bvm.events.ui.student.EventListFragment;
 import com.bvm.events.ui.student.MyAttendanceFragment;
 import com.bvm.events.ui.student.ProfileFragment;
+import com.bvm.events.util.InsetsUtil;
 import com.bvm.events.util.SessionManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,8 +31,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        InsetsUtil.applyPadding(binding.fragmentContainer, true, false);
+        InsetsUtil.applyPadding(binding.bottomNavigation, false, true);
 
         sessionManager = new SessionManager(this);
 

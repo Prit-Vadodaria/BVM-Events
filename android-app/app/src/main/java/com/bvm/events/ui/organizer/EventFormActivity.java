@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bvm.events.databinding.ActivityEventFormBinding;
@@ -19,6 +20,7 @@ import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
 import com.bvm.events.util.Constants;
 import com.bvm.events.util.DateUtils;
+import com.bvm.events.util.InsetsUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,8 +50,10 @@ public class EventFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityEventFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        InsetsUtil.applyPadding(binding.getRoot(), true, true);
 
         isEditMode = getIntent().getBooleanExtra(Constants.EXTRA_IS_EDIT, false);
         eventToEdit = (Event) getIntent().getSerializableExtra(Constants.EXTRA_EVENT);

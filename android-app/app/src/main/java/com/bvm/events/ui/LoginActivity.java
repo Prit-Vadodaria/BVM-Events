@@ -7,6 +7,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bvm.events.MainActivity;
@@ -16,6 +17,7 @@ import com.bvm.events.model.LoginRequest;
 import com.bvm.events.model.User;
 import com.bvm.events.network.ApiCallback;
 import com.bvm.events.network.ApiClient;
+import com.bvm.events.util.InsetsUtil;
 import com.bvm.events.util.SessionManager;
 
 import retrofit2.Call;
@@ -29,8 +31,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        InsetsUtil.applyPadding(binding.getRoot(), true, true);
 
         sessionManager = new SessionManager(this);
 
